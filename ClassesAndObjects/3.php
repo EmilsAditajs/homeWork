@@ -1,163 +1,104 @@
 <?php
 
+
 class FuelGauge
 {
-    protected int $fuelAmount;
+    private float $fuel = 0;
+    private const FUEL_CAPACITY = 70;
 
-    public function __construct($fuelAmount)
+    public function __construct(float $amount)
     {
-        $this->fuelAmount = $fuelAmount;
+        $this->change($amount);
     }
 
-    public function getFuel(): int
+    public function change(float $amount): void
     {
-        return $this->fuelAmount;
-    }
+        $this->fuel += $amount;
 
-    public function incrementFuel(): int
-    {
-        if ($this->fuelAmount < 70) {
-            return $this->fuelAmount++;
+        if ($this->fuel > self::FUEL_CAPACITY) {
+            $this->fuel = self::FUEL_CAPACITY;
         }
-        return $this->fuelAmount;
+
+        if ($this->fuel < 0) {
+            $this->fuel = 0;
+        }
     }
 
-    public function decrementFuel(): int
+    public function getFuel(): float
     {
-        if ($this->fuelAmount > 0) {
-            return $this->fuelAmount--;
-        }
-        return $this->fuelAmount;
+        return $this->fuel;
     }
 }
 
 class Odometer
 {
-    public int $mileage;
+    private int $mileage = 0;
 
-    public function __construct($mileage)
+    public function getMileage()
     {
-        $this->mileage = $mileage;
+        return $this->mileage;
+    }
+
+    public function addMileage(int $amount)
+    {
+        $this->mileage += $amount;
+    }
+}
+
+class Car
+{
+    private string $name;
+    private FuelGauge $fuelGauge;
+    private Odometer $odometer;
+
+    private const CONSUMPTION_PER_KM = 0.07; // 7L on 100km
+
+    public function __construct(string $name, int $fuelGaugeAmount)
+    {
+        $this->name = $name;
+        $this->fuelGauge = new FuelGauge($fuelGaugeAmount);
+        $this->odometer = new Odometer();
+    }
+
+    public function drive(int $distance = 10): void
+    {
+        if ($this->fuelGauge->getFuel() <= 0) return;
+
+        $this->fuelGauge->change($distance * -self::CONSUMPTION_PER_KM);
+        $this->odometer->addMileage($distance);
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getFuel(): float
+    {
+        return $this->fuelGauge->getFuel();
     }
 
     public function getMileage(): int
     {
-        return $this->mileage;
-    }
-
-    public function incrementMileage(): int
-    {
-        if ($this->mileage < 999999) {
-            $this->mileage++;
-        } else {
-            $this->mileage = 0;
-        }
-        return $this->mileage;
-    }
-
-
-}
-
-Class Tires
-{
-    public string $name;
-    public int $thickness;
-    public int $wearFactor;
-
-    public function __construct($name, $thickness)
-    {
-       $this->name = $name;
-       $this->thickness = $thickness;
-       $this->wearFactor = rand(1,9)/10;
-    }
-
-    public function destroyTires()
-    {
-        $this->thickness -= $this->wearFactor;
-    }
-
-    public function getTireThickness()
-    {
-        return $this->thickness;
-    }
-
-    public function getName()
-    {
-        return $this->name;
+        return $this->odometer->getMileage();
     }
 }
 
-Class Car
-{
-    public string $name;
-    public array $tires = [];
+$name = readline('Car name: ');
+$fuelGaugeAmount = (int) readline('Fuel Gauge amount: ');
+$driveDistance = (int) readline('Drive distance: ');
 
-    public function __construct($name)
-    {
-        $this->name = $name;
-    }
+$car = new Car($name, $fuelGaugeAmount);
 
-    public function addTire($tire)
-    {
-        $this->tires[] = $tire;
-    }
+echo "------ " . $car->getName() . " ------";
+echo PHP_EOL;
 
-    public function drive(object $carFuel, object $carMileage)
-    {
-        $carMileage->incrementMileage();
-        if ($carMileage->mileage % 10 == 0) {
-            $carFuel->decrementFuel();
-            foreach($this->tires as $tire)
-            {
-                $tire->destroyTires();
-            }
-        }
-    }
-}
+while ($car->getFuel() > 0) {
+    echo "Fuel: " . $car->getFuel() . "l" . PHP_EOL;
+    echo "Mileage: " . $car->getMileage() . "km" . PHP_EOL;
 
-$carFuel = new FuelGauge(0);
-$carMileage = new Odometer(0);
-$goodCar = new Car('Emils');
-$tire1 = new Tires('tire1', 10);
-$goodCar->addTire($tire1);
-$tire2 = new Tires('tire2', 10);
-$goodCar->addTire($tire2);
-$tire3 = new Tires('tire3', 10);
-$goodCar->addTire($tire3);
-$tire4 = new Tires('tire4', 10);
-$goodCar->addTire($tire4);
+    $car->drive($driveDistance);
 
-$fuel = readline('Enter fuel l: ');
-for($y=0; $y<$fuel; $y++) {
-    $carFuel->incrementFuel();
-    echo $carFuel->getFuel() . " l" . PHP_EOL;
     sleep(1);
 }
-echo "Fuel tank filled" . PHP_EOL;
-
-$km =(int) readline('Enter km: ');
-echo $carMileage->getMileage() . " km" . PHP_EOL;
-echo $carFuel->getFuel() . " l" . PHP_EOL . PHP_EOL;
-
-for($x=0; $x<$km; $x++) {
-    $goodCar->drive($carFuel, $carMileage);
-    echo $carMileage->getMileage() . " km" . PHP_EOL;
-    echo $carFuel->getFuel() . " l" . PHP_EOL . PHP_EOL;
-    foreach($goodCar->tires as $tire)
-    {
-        if($tire->thickness <= 0)
-        {
-            echo $tire->getName() .  ' exploded, you died' . PHP_EOL;
-        }
-        echo $tire->getName() . " is " . $tire->getTireThickness() . " thick" . PHP_EOL;
-    }
-
-    if($carFuel->getFuel() == 0)
-    {
-        echo "Out of fuel." . PHP_EOL;
-        exit;
-    }
-    sleep(1);
-}
-
 
