@@ -6,7 +6,6 @@
  * Time: 15:17
  */
 
-
 class Application
 {
     function run()
@@ -26,7 +25,7 @@ class Application
                     echo "Bye!";
                     die;
                 case 1:
-                    $this->add_movies();
+                    $this->addVideo();
                     break;
                 case 2:
                     $this->rent_video();
@@ -43,7 +42,7 @@ class Application
         }
     }
 
-    private function add_movies()
+    public function addVideo(Video $video)
     {
         //todo
     }
@@ -108,7 +107,7 @@ class VideoStore
     }
 }
 
-class Video extends Videostore
+class Video
 {
     public string $title;
     public bool $availability = true;
@@ -142,6 +141,7 @@ class Video extends Videostore
         $this->availability = !$this->availability;
     }
 }
+
 
 
 
