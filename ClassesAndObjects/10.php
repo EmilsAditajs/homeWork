@@ -50,13 +50,14 @@ class VideoStore
         }
     }
 
-    public function getVideo (string $input)#
+    public function getVideo (string $input)
     {
         foreach($this->videos as $video) {
-            if($video->name == $input) {
+            if($video->title == $input) {
                 return $video;
             }
         }
+        return 'Video not found';
     }
 }
 
@@ -115,19 +116,23 @@ while (true) {
         case 1:
             $vid = readline('Enter video name: ');
             echo PHP_EOL;
-            $vid = new Video($vid);
-            $videoStore->addVideo($vid);
+            $v = new Video($vid);
+            $videoStore->addVideo($v);
+            var_dump($videoStore->videos);
             break;
         case 2:
             $rentVid = readline('Enter video name: ');
-            $videoStore->checkOutVideo($videoStore->getVideo($rentVid));
+            $rentV = $videoStore->getVideo($rentVid);
+            var_dump($rentV);
+            $videoStore->checkOutVideo($rentV);
             break;
         case 3:
             $returnVid = readline('Enter video name: ');
-            $videoStore->returnVideo($videoStore->getVideo($returnVid));
+            $returnV = $videoStore->getVideo($returnVid);
+            $videoStore->returnVideo($returnV);
             break;
         case 4:
-            $videoStore->list();
+            echo $videoStore->list();
             break;
         default:
             echo "Sorry, I don't understand you..";
